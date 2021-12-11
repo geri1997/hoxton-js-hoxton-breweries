@@ -5,7 +5,8 @@ const state={
     selectedBreweryType:null,
     breweryTypes:['micro','regional','brewpub'],
     maxNumberOfBreweriesToDisplay:10,
-    arrayWithSearchTerm:[]
+    arrayWithSearchTerm:[],
+    page: 1
 }
 
 const mainTag = document.querySelector('main')
@@ -34,6 +35,7 @@ selectStateForm.addEventListener('submit',(e)=>{
     filterSelect.setAttribute('id','filter-by-type')
     filterSelect.addEventListener('change',()=>{
         state.selectedBreweryType = filterSelect.value
+        state.page = 1
         breweryListUl.innerHTML = ''
         if(!state.selectedBreweryType){
             
@@ -99,6 +101,7 @@ selectStateForm.addEventListener('submit',(e)=>{
     searchInput.addEventListener('input',e=>{
         let breweryListUl = document.querySelector('.breweries-list')
         breweryListUl.innerHTML = ''
+        state.page = 1
         for(let brewery of returnSingleTypeBreweries()){
             createBreweryCard(brewery,breweryListUl)
         }
@@ -135,6 +138,7 @@ getBreweriesByState(state.selectedState).then((arr)=>{
 })
 
 function createCityCheckbox(city){
+
     let breweryListUl = document.querySelector('.breweries-list')
     let checkboxForm = document.querySelector('#filter-by-city-form')
     const cityInputCheckbox = document.createElement('input') 
@@ -150,6 +154,7 @@ function createCityCheckbox(city){
         cityInputCheckbox.checked =false
     }
     cityInputCheckbox.addEventListener('click',()=>{
+        state.page = 1
         if(cityInputCheckbox.checked){
             state.selectedCities.push(cityInputCheckbox.value)
             // let singleTypeBreweries = returnSingleTypeBreweries()
@@ -190,6 +195,7 @@ function returnCities(breweries){
         return brewery.city
     })
     cities = [...new Set(cities)]
+    
     return cities.sort()
 }
 
@@ -259,17 +265,114 @@ function returnSingleTypeBreweries(){
     let searchInput = document.querySelector('input#search-breweries')
 
     singleTypeBreweries = singleTypeBreweries.filter(brewery=>{
-        return brewery.name.includes(searchInput.value)
+        return brewery.name.toLowerCase().includes(searchInput.value.toLowerCase())
     })
-
-    return singleTypeBreweries.slice(0,state.maxNumberOfBreweriesToDisplay)
+    if(singleTypeBreweries.length<state.maxNumberOfBreweriesToDisplay){
+        state.page = 1
+    }
+        if(state.page ===1){
+            return singleTypeBreweries.slice(0,state.maxNumberOfBreweriesToDisplay)
+        }else{
+            return singleTypeBreweries.slice(state.maxNumberOfBreweriesToDisplay*(state.page-1),state.maxNumberOfBreweriesToDisplay*state.page)
+        }
+    
+    // if(state.page === 1){
+    //     return singleTypeBreweries.slice(0,state.maxNumberOfBreweriesToDisplay)
+    // }else if(state.page ===2){
+    //     return singleTypeBreweries.slice(state.maxNumberOfBreweriesToDisplay,state.maxNumberOfBreweriesToDisplay*2)
+    // }
 }
 
 function renderCities(){
     let checkboxForm = document.querySelector('#filter-by-city-form')
     checkboxForm.innerHTML = ''
-    let cities = returnCities(returnFilteredBreweriesByType())
+    let filteredBySingleType = returnFilteredBreweriesByType().filter(brewery=>{
+        if(state.selectedBreweryType){
+            return brewery.brewery_type===state.selectedBreweryType
+        }else{
+            return true
+    }
+}
+)
+    let cities = returnCities(filteredBySingleType)
         for(let city of cities){
             createCityCheckbox(city)
         }
     }
+
+function pagination(){
+    let prevButton = document.querySelector('#previous')
+    let nextButton = document.querySelector('#next')
+
+
+    nextButton.addEventListener('click',e=>{
+        let singleTypeBreweries = returnFilteredBreweriesByType().filter(brewery=>{
+            if(state.selectedBreweryType){
+                return brewery.brewery_type===state.selectedBreweryType
+            }else{
+                return true
+        }
+    }
+    )
+    
+    singleTypeBreweries =  singleTypeBreweries.filter(brewery=>{
+        if(state.selectedCities.length ===0){
+            return true
+        }
+        return state.selectedCities.includes(brewery.city)    
+    })
+    let searchInput = document.querySelector('input#search-breweries')
+    
+    singleTypeBreweries = singleTypeBreweries.filter(brewery=>{
+        return brewery.name.toLowerCase().includes(searchInput.value.toLowerCase())
+    })
+        let maxPages = Math.ceil(singleTypeBreweries.length/state.maxNumberOfBreweriesToDisplay)
+        if(state.page===maxPages){
+            return 1
+        }
+        if(state.page<maxPages){state.page++}
+        
+        
+        let breweryListUl = document.querySelector('.breweries-list')
+        breweryListUl.innerHTML = ''
+        for(let brewery of returnSingleTypeBreweries()){
+                    createBreweryCard(brewery,breweryListUl)
+                }
+                renderCities()
+    })
+    prevButton.addEventListener('click',e=>{
+        let singleTypeBreweries = returnFilteredBreweriesByType().filter(brewery=>{
+            if(state.selectedBreweryType){
+                return brewery.brewery_type===state.selectedBreweryType
+            }else{
+                return true
+        }
+    }
+    )
+    
+    singleTypeBreweries =  singleTypeBreweries.filter(brewery=>{
+        if(state.selectedCities.length ===0){
+            return true
+        }
+        return state.selectedCities.includes(brewery.city)    
+    })
+    let searchInput = document.querySelector('input#search-breweries')
+    
+    singleTypeBreweries = singleTypeBreweries.filter(brewery=>{
+        return brewery.name.toLowerCase().includes(searchInput.value.toLowerCase())
+    })
+        let maxPages = Math.ceil(singleTypeBreweries.length/state.maxNumberOfBreweriesToDisplay)
+        if(state.page===1){
+            return 1
+        }
+        if(state.page>1){state.page--}
+        
+        let breweryListUl = document.querySelector('.breweries-list')
+        breweryListUl.innerHTML = ''
+        for(let brewery of returnSingleTypeBreweries()){
+                    createBreweryCard(brewery,breweryListUl)
+                }
+                renderCities()
+    })
+}
+pagination()
