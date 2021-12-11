@@ -12,10 +12,13 @@ const state={
 const mainTag = document.querySelector('main')
 const selectStateForm = document.querySelector('#select-state-form')
 const selectStateInput = document.querySelector('#select-state')
+let pageNr = document.querySelector('#pageNr')
+
 
 selectStateForm.addEventListener('submit',(e)=>{
     state.selectedBreweryType =null
     state.selectedCities = []
+    pageNr.textContent = state.page
     e.preventDefault()
     state.selectedState = selectStateInput.value
     mainTag.innerHTML = ''
@@ -129,6 +132,7 @@ selectStateForm.addEventListener('submit',(e)=>{
             
 getBreweriesByState(state.selectedState).then((arr)=>{
         state.selectedStateBreweries = arr
+
         renderCities()
         for(let brewery of returnSingleTypeBreweries()){
             createBreweryCard(brewery,breweryListUl)
@@ -269,6 +273,8 @@ function returnSingleTypeBreweries(){
     })
     if(singleTypeBreweries.length<state.maxNumberOfBreweriesToDisplay){
         state.page = 1
+        pageNr.textContent = state.page
+
     }
         if(state.page ===1){
             return singleTypeBreweries.slice(0,state.maxNumberOfBreweriesToDisplay)
@@ -303,6 +309,8 @@ function renderCities(){
 function pagination(){
     let prevButton = document.querySelector('#previous')
     let nextButton = document.querySelector('#next')
+    let pageNr = document.querySelector('#pageNr')
+
 
 
     nextButton.addEventListener('click',e=>{
@@ -331,6 +339,7 @@ function pagination(){
             return 1
         }
         if(state.page<maxPages){state.page++}
+        pageNr.textContent = state.page
         
         
         let breweryListUl = document.querySelector('.breweries-list')
@@ -366,13 +375,14 @@ function pagination(){
             return 1
         }
         if(state.page>1){state.page--}
-        
+        pageNr.textContent = state.page
         let breweryListUl = document.querySelector('.breweries-list')
         breweryListUl.innerHTML = ''
         for(let brewery of returnSingleTypeBreweries()){
                     createBreweryCard(brewery,breweryListUl)
                 }
                 renderCities()
-    })
+                
+            })
 }
 pagination()
