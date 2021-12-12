@@ -22,67 +22,7 @@ selectStateForm.addEventListener('submit',(e)=>{
     e.preventDefault()
     state.selectedState = selectStateInput.value
     mainTag.innerHTML = ''
-    const sectionAside = document.createElement('aside')
-    sectionAside.setAttribute('class','filters-section')
-    const filterByH2 = document.createElement('h2') 
-    filterByH2.textContent = 'Filter by:'
-    const filterForm = document.createElement('form') 
-    filterForm.setAttribute('id','filter-by-type-form')
-    filterForm.setAttribute('autocomplete','off')
-    const typeLabel = document.createElement('label')
-    typeLabel.setAttribute('for','filter-by-type')
-    const typeH3 = document.createElement('h3')
-    typeH3.textContent = 'Type of Brewery'
-    const filterSelect = document.createElement('select') 
-    filterSelect.setAttribute('name','filter-by-type')
-    filterSelect.setAttribute('id','filter-by-type')
-    filterSelect.addEventListener('change',()=>{
-        state.selectedBreweryType = filterSelect.value
-        state.page = 1
-        breweryListUl.innerHTML = ''
-        if(!state.selectedBreweryType){
-            
-            for(let brewery of returnSingleTypeBreweries()){
-                createBreweryCard(brewery,breweryListUl)
-            }
-            renderCities()
-        }else{
-            let singleTypeBreweries = returnSingleTypeBreweries()
-        breweryListUl.innerHTML= ''
-        for(let brewery of singleTypeBreweries){
-            createBreweryCard(brewery,breweryListUl)
-        }
-        renderCities()}
-    })
-    const filterTypeOption = document.createElement('option') 
-        filterTypeOption.setAttribute('value','')
-        filterTypeOption.textContent = 'Select a type'
-        filterSelect.append(filterTypeOption)
-    for(let type of state.breweryTypes){
-        const filterOption = document.createElement('option') 
-        filterOption.setAttribute('value',type)
-        filterOption.textContent = type
-        filterSelect.append(filterOption)
-    }
-    const filterByCityDiv = document.createElement('div') 
-    filterByCityDiv.setAttribute('class','filter-by-city-heading')
-
-    const citiesH3 = document.createElement('h3') 
-    citiesH3.textContent = 'Cities'
-    const clearAllBtn = document.createElement('button') 
-    clearAllBtn.textContent = 'Clear all'
-    clearAllBtn.setAttribute('class','clear-all-btn')
-    clearAllBtn.addEventListener('click',e=>{
-        state.selectedCities=[]
-        breweryListUl.innerHTML = ''
-        for(let brewery of returnSingleTypeBreweries()){
-            createBreweryCard(brewery,breweryListUl)
-        }
-        renderCities()
-    })
-
-    const filterCityForm = document.createElement('form') 
-    filterCityForm.setAttribute('id','filter-by-city-form')
+    renderAside()
 
     
 
@@ -102,26 +42,18 @@ selectStateForm.addEventListener('submit',(e)=>{
     searchInput.setAttribute('name','search-breweries')
     searchInput.setAttribute('type','text')
     searchInput.addEventListener('input',e=>{
-        let breweryListUl = document.querySelector('.breweries-list')
-        breweryListUl.innerHTML = ''
         state.page = 1
-        for(let brewery of returnSingleTypeBreweries()){
-            createBreweryCard(brewery,breweryListUl)
-        }
+        pageNr.textContent = state.page
         renderCities()
+        renderBreweryCards()
+        
     })
     const breweriesArticle = document.createElement('article')
     const breweryListUl = document.createElement('ul')
     breweryListUl.setAttribute('class','breweries-list')
-    typeLabel.append(typeH3)
-
-    sectionAside.append(filterByH2,filterForm,filterByCityDiv,filterCityForm)
     
-    filterByCityDiv.append(citiesH3,clearAllBtn)
-    
-    filterForm.append(typeLabel,filterSelect)
 
-    mainTag.append(sectionAside,listOfBreweriesH1,searchHeader,breweriesArticle)
+    mainTag.append(listOfBreweriesH1,searchHeader,breweriesArticle)
 
     searchHeader.append(searchForm)
 
@@ -134,16 +66,13 @@ getBreweriesByState(state.selectedState).then((arr)=>{
         state.selectedStateBreweries = arr
 
         renderCities()
-        for(let brewery of returnSingleTypeBreweries()){
-            createBreweryCard(brewery,breweryListUl)
-        }
+        renderBreweryCards()
     })
 
 })
 
 function createCityCheckbox(city){
 
-    let breweryListUl = document.querySelector('.breweries-list')
     let checkboxForm = document.querySelector('#filter-by-city-form')
     const cityInputCheckbox = document.createElement('input') 
     cityInputCheckbox.setAttribute('type','checkbox')
@@ -165,11 +94,9 @@ function createCityCheckbox(city){
             // let filteredBySingleTypeAndCity = singleTypeBreweries.filter(brewery=>{
             //     return state.selectedCities.includes(brewery.city)    
             // })
-            breweryListUl.innerHTML=''
-            for(let brewery of returnSingleTypeBreweries()){
-                createBreweryCard(brewery,breweryListUl)
-            }
             renderCities()
+            renderBreweryCards()
+            
         }else{
             state.selectedCities.splice(state.selectedCities.indexOf(cityInputCheckbox.value),1)
             // let singleTypeBreweries = returnSingleTypeBreweries()
@@ -177,11 +104,9 @@ function createCityCheckbox(city){
             //     return state.selectedCities.includes(brewery.city)    
             // })
             // console.log(filteredBySingleTypeAndCity)
-            breweryListUl.innerHTML=''
-            for(let brewery of returnSingleTypeBreweries()){
-                createBreweryCard(brewery,breweryListUl)
-            }
             renderCities()
+            renderBreweryCards()
+            
         }
     })
     checkboxForm.append(cityInputCheckbox,cityLabel)
@@ -208,8 +133,8 @@ function getBreweriesByState(selectedState){
         return resp.json()
     }))
 }
-function createBreweryCard(brewery,appendTo){
-
+function createBreweryCard(brewery){
+    let breweryListUl = document.querySelector('.breweries-list')
     const singleBreweryLi = document.createElement('li')
     const breweryNameH2 = document.createElement('h2')
     breweryNameH2.textContent = brewery.name
@@ -244,7 +169,7 @@ function createBreweryCard(brewery,appendTo){
     }
 
 
-    appendTo.append(singleBreweryLi)
+    breweryListUl.append(singleBreweryLi)
     singleBreweryLi.append(breweryNameH2,breweryTypeDiv,addressSection,phoneSection,linkSection)
     addressSection.append(addressH3,addressStreetP,cityZipP)
     cityZipP.append(cityZipStrong)
@@ -260,6 +185,9 @@ function returnSingleTypeBreweries(){
     }
     )
 
+    // state.selectedCities = state.selectedCities.filter(city=>{
+    //         returnCities(singleTypeBreweries).includes(city)
+    // })
     singleTypeBreweries =  singleTypeBreweries.filter(brewery=>{
         if(state.selectedCities.length ===0){
             return true
@@ -297,10 +225,22 @@ function renderCities(){
             return brewery.brewery_type===state.selectedBreweryType
         }else{
             return true
-    }
-}
-)
+            }
+        }
+    )
     let cities = returnCities(filteredBySingleType)
+    // state.selectedCities= state.selectedCities.filter(e=>{
+    //     console.log(e)
+    // }
+    
+    state.selectedCities=state.selectedCities.filter(selectedCity=>
+         cities.includes(selectedCity)   )
+        
+        // if (!state.selectedCities.includes(city)){
+
+        // }
+    
+        // )
         for(let city of cities){
             createCityCheckbox(city)
         }
@@ -342,12 +282,10 @@ function pagination(){
         pageNr.textContent = state.page
         
         
-        let breweryListUl = document.querySelector('.breweries-list')
-        breweryListUl.innerHTML = ''
-        for(let brewery of returnSingleTypeBreweries()){
-                    createBreweryCard(brewery,breweryListUl)
-                }
-                renderCities()
+
+        renderCities()
+        renderBreweryCards()
+                
     })
     prevButton.addEventListener('click',e=>{
         let singleTypeBreweries = returnFilteredBreweriesByType().filter(brewery=>{
@@ -376,13 +314,80 @@ function pagination(){
         }
         if(state.page>1){state.page--}
         pageNr.textContent = state.page
-        let breweryListUl = document.querySelector('.breweries-list')
-        breweryListUl.innerHTML = ''
-        for(let brewery of returnSingleTypeBreweries()){
-                    createBreweryCard(brewery,breweryListUl)
-                }
-                renderCities()
+
+        renderCities()
+        renderBreweryCards()
+                
                 
             })
 }
 pagination()
+function renderAside(){
+    
+    const sectionAside = document.createElement('aside')
+    sectionAside.setAttribute('class','filters-section')
+    const filterByH2 = document.createElement('h2') 
+    filterByH2.textContent = 'Filter by:'
+    const filterForm = document.createElement('form') 
+    filterForm.setAttribute('id','filter-by-type-form')
+    filterForm.setAttribute('autocomplete','off')
+    const typeLabel = document.createElement('label')
+    typeLabel.setAttribute('for','filter-by-type')
+    const typeH3 = document.createElement('h3')
+    typeH3.textContent = 'Type of Brewery'
+    const filterSelect = document.createElement('select') 
+    filterSelect.setAttribute('name','filter-by-type')
+    filterSelect.setAttribute('id','filter-by-type')
+    filterSelect.addEventListener('change',()=>{
+        state.selectedBreweryType = filterSelect.value
+        state.page = 1
+
+        renderCities()
+        renderBreweryCards()
+        
+    })
+    const filterTypeOption = document.createElement('option') 
+        filterTypeOption.setAttribute('value','')
+        filterTypeOption.textContent = 'Select a type'
+        filterSelect.append(filterTypeOption)
+    for(let type of state.breweryTypes){
+        const filterOption = document.createElement('option') 
+        filterOption.setAttribute('value',type)
+        filterOption.textContent = type
+        filterSelect.append(filterOption)
+    }
+    const filterByCityDiv = document.createElement('div') 
+    filterByCityDiv.setAttribute('class','filter-by-city-heading')
+
+    const citiesH3 = document.createElement('h3') 
+    citiesH3.textContent = 'Cities'
+    const clearAllBtn = document.createElement('button') 
+    clearAllBtn.textContent = 'Clear all'
+    clearAllBtn.setAttribute('class','clear-all-btn')
+    clearAllBtn.addEventListener('click',e=>{
+        state.selectedCities=[]
+        renderCities()
+        renderBreweryCards()
+        
+    })
+
+    const filterCityForm = document.createElement('form') 
+    filterCityForm.setAttribute('id','filter-by-city-form')
+
+    typeLabel.append(typeH3)
+
+    sectionAside.append(filterByH2,filterForm,filterByCityDiv,filterCityForm)
+    
+    filterByCityDiv.append(citiesH3,clearAllBtn)
+    
+    filterForm.append(typeLabel,filterSelect)
+    mainTag.append(sectionAside)
+}
+
+function renderBreweryCards(){
+    let breweryListUl = document.querySelector('.breweries-list')
+    breweryListUl.innerHTML = ''
+    for(let brewery of returnSingleTypeBreweries()){
+        createBreweryCard(brewery)
+    }
+}
