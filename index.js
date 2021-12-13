@@ -159,6 +159,29 @@ function createBreweryCard(brewery){
     const 
     linkSection= document.createElement('section') 
     linkSection.setAttribute('class',"link")
+//     <label for="meeting-time">Choose a time for your appointment:</label>
+
+// <input type="datetime-local" id="meeting-time"
+//        name="meeting-time" value="2018-06-12T19:30"
+//        min="2018-06-07T00:00" max="2018-06-14T00:00">
+const bookLabel = document.createElement('label') 
+bookLabel.textContent = 'Book a tour'
+bookLabel.setAttribute('for','date')
+
+const bookInput = document.createElement('input') 
+bookInput.setAttribute('type','datetime-local')
+bookInput.setAttribute('id','date')
+bookInput.setAttribute('name','date')
+bookInput.setAttribute('value','2021-12-13T12:00')
+bookInput.setAttribute('min','2021-12-13T12:00')
+bookInput.setAttribute('max','2021-12-19T12:00')
+
+const bookBtn = document.createElement('button')
+bookBtn.textContent= 'Book'
+const emptyP = document.createElement('p')
+const bookDiv = document.createElement('div')
+bookDiv.style.display = 'grid'
+
 
     if(brewery.website_url){
     const linkTag = document.createElement('a') 
@@ -170,7 +193,8 @@ function createBreweryCard(brewery){
 
 
     breweryListUl.append(singleBreweryLi)
-    singleBreweryLi.append(breweryNameH2,breweryTypeDiv,addressSection,phoneSection,linkSection)
+    singleBreweryLi.append(breweryNameH2,breweryTypeDiv,addressSection,phoneSection,linkSection,emptyP,bookDiv)
+    bookDiv.append(bookLabel,bookInput,bookBtn)
     addressSection.append(addressH3,addressStreetP,cityZipP)
     cityZipP.append(cityZipStrong)
     phoneSection.append(phoneH3,naP)
